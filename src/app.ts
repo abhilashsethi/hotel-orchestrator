@@ -1,6 +1,7 @@
 import express from "express";
 import { supplierAHotels } from "./suppliers/supplierA";
 import { supplierBHotels } from "./suppliers/supplierB";
+import { getBestHotels } from "./services/hotelService";
 
 const app = express();
 
@@ -30,6 +31,18 @@ app.get("/supplierB/hotels", (req, res) => {
   );
 
   res.json(result);
+});
+
+app.get("/api/hotels", (req, res) => {
+  const { city } = req.query;
+
+  if (!city || typeof city !== "string") {
+    return res.status(400).json({ error: "City is required" });
+  }
+
+  const hotels = getBestHotels(city);
+
+  res.json(hotels);
 });
 
 export default app;
