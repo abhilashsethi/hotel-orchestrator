@@ -2,6 +2,8 @@ import express from "express";
 import { supplierAHotels } from "./suppliers/supplierA";
 import { supplierBHotels } from "./suppliers/supplierB";
 import { getBestHotels } from "./services/hotelService";
+import { temporalClient } from "./temporalClient";
+import { hotelWorkflow } from "./workflows/hotelWorkflow";
 
 const app = express();
 
@@ -43,6 +45,26 @@ app.get("/api/hotels", (req, res) => {
   const hotels = getBestHotels(city);
 
   res.json(hotels);
+});
+
+app.get("/api/hotels", async (req, res) => {
+  const { city } = req.query;
+
+  if (!city || typeof city !== "string") {
+    return res.status(400).json({ error: "City is required" });
+  }
+
+  const client = await temporalClient();
+
+  const handle = await client.workflow.start(hotelWorkflow, {
+    args: [city],
+    taskQueue: "hotel-task-queue",
+    workflowId: `hotel-${Date.now()}`,
+  });
+
+  const result = await handle.result();
+
+  res.json(result);
 });
 
 export default app;
