@@ -72,7 +72,6 @@ app.get("/api/hotels", async (req, res) => {
     });
   }
 
-  // 🔥 FILTER LOGIC HERE
   let filteredHotels = hotels;
 
   if (minPrice) {
